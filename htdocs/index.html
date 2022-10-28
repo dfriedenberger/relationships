@@ -1,0 +1,96 @@
+<html>
+
+    <head>
+
+
+    </head>
+
+    <body>
+
+        <!-- The DIV for a Diagram needs an explicit size or else we won't see anything.
+             In this case we also add a border to help see the edges. -->
+        <div id="myDiagramDiv" style="border: solid 1px blue; width:100%; height:100%; margin: 10px"></div>
+        
+        <script src="js/jquery-3.6.1.min.js"></script>
+        <script src="js/go.js"></script>
+       
+        <!-- Create the Diagram in the DIV element using JavaScript. -->
+        <!-- The "go" object is the "namespace" that holds all of the GoJS types. -->
+        <script>
+        
+        $( document ).ready(function() {
+            console.log( "ready!" );
+
+            model = undefined
+            $.ajax({
+                    dataType: "json",
+                    url: "/api/model",
+                    async: false,
+                    success: function(data) {
+                        model = data
+                        l = model.nodes.length
+                        for( var i = 0;i < l;i++)
+                        {
+                            switch(model.nodes[i].type) {
+                                case "person":
+                                    model.nodes[i]['color'] = "lightblue"
+                                    model.nodes[i]['img'] = "img/account.png"
+                                    break;
+                                case "university":
+                                    model.nodes[i]['color'] = "lightgreen"
+                                    model.nodes[i]['img'] = "img/school.png"
+                                    break;
+                                case "company":
+                                    model.nodes[i]['color'] = "lightgreen"
+                                    model.nodes[i]['img'] = "img/domain.png"
+                                    break;
+                                case "project":
+                                    model.nodes[i]['color'] = "pink"
+                                    model.nodes[i]['img'] = "img/home.png"
+                                    break;
+                                case "event":
+                                    model.nodes[i]['color'] = "pink"
+                                    model.nodes[i]['img'] = "img/calendar.png"
+                                    break;
+                                default:
+                                    model.nodes[i]['color'] = "orange"
+                                    break;
+                            }
+
+
+                        }
+                    }
+            });
+            
+            var diagram = new go.Diagram("myDiagramDiv");
+
+
+            // the node template describes how each Node should be constructed
+            diagram.nodeTemplate =
+            new go.Node("Auto")  // the Shape will go around the TextBlock
+                .add(new go.Shape("RoundedRectangle")
+                    // Shape.fill is bound to Node.data.color
+                    .bind("fill", "color"))
+                .add(new go.Panel("Horizontal")
+                .add(new go.Picture({maxSize: new go.Size(16, 16)})
+                    .bind("source", "img"))
+                .add(new go.TextBlock({ margin: 8}) // Specify a margin to add some room around the text
+                    // TextBlock.text is bound to Node.data.key
+                    .bind("text", "name")));
+
+
+            // the Model holds only the essential information describing the diagram
+            diagram.model = new go.GraphLinksModel(model.nodes,model.edges)
+            
+
+
+        });
+          
+        </script>
+
+
+
+    </body>
+
+
+</html>
