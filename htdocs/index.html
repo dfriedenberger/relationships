@@ -1,69 +1,200 @@
-<html>
-
+<!doctype html>
+<html lang="en">
+   
     <head>
-
-
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Relationships</title>
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="css/tribute.css" />
+       
     </head>
-
+     
     <body>
 
-        <!-- The DIV for a Diagram needs an explicit size or else we won't see anything.
-             In this case we also add a border to help see the edges. -->
-        <div id="myDiagramDiv" style="border: solid 1px blue; width:100%; height:100%; margin: 10px"></div>
-        
+        <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+              <span class="fs-4">Relationships</span>
+            </a>
+      
+            <ul class="nav nav-pills">
+              <li class="nav-item"><a href="#" class="nav-link">Docs</a></li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Bearbeiten
+                </a>
+                <ul id="create-object-menu" class="dropdown-menu">
+                    <!-- menu items will be created automatically -->
+                </ul>
+              </li>
+              <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
+            </ul>
+          </header>
+
+
+
+        <div id="container">
+            <div id="myDiagramDiv" style="border: 1px solid blue; width:100%; height:500px;"></div>
+
+           
+        </div>
+
+
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                    ...
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="save">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Handlebar -->
+        <script id="text-input-template" type="text/x-handlebars-template">
+                <div class="form-group">
+                  <label for="{{id}}">{{description}}</label>
+                  <input type="text" name="{{name}}" class="form-control" id="{{id}}">
+                </div>
+        </script>
+
+        <script id="date-input-template" type="text/x-handlebars-template">
+            <div class="form-group">
+              <label for="{{id}}">{{description}}</label>
+              <input type="date" name="{{name}}" class="form-control" id="{{id}}">
+            </div>
+        </script>
+
+        <script id="relation-input-template" type="text/x-handlebars-template">
+            <div class="form-group">
+                <label for="{{id}}">{{description}}</label>
+                <div class="form-control" id="{{id}}" contenteditable></div> 
+                <input type="hidden" name="{{name}}" data-source="{{id}}">
+            </div>
+        </script>
+
+        <script id="create-object-menu-item-template" type="text/x-handlebars-template">
+            <li><a class="dropdown-item create-object" href="#" data-object="{{type}}">{{text}}</a></li>
+        </script>
+
+
+
         <script src="js/jquery-3.6.1.min.js"></script>
+        <script src="js/bootstrap.bundle.min.js"></script>
         <script src="js/go.js"></script>
-       
+        <script src="js/handlebars.min-v4.7.7.js"></script>
+        <script src="js/tribute.min.js"></script>
+        <script src="js/util.js"></script>
+
+
+        
         <!-- Create the Diagram in the DIV element using JavaScript. -->
         <!-- The "go" object is the "namespace" that holds all of the GoJS types. -->
         <script>
         
         $( document ).ready(function() {
+            
             console.log( "ready!" );
 
-            model = undefined
-            $.ajax({
-                    dataType: "json",
-                    url: "/api/model",
-                    async: false,
-                    success: function(data) {
-                        model = data
-                        l = model.nodes.length
-                        for( var i = 0;i < l;i++)
-                        {
-                            switch(model.nodes[i].type) {
-                                case "person":
-                                    model.nodes[i]['color'] = "lightblue"
-                                    model.nodes[i]['img'] = "img/account.png"
-                                    break;
-                                case "university":
-                                    model.nodes[i]['color'] = "lightgreen"
-                                    model.nodes[i]['img'] = "img/school.png"
-                                    break;
-                                case "company":
-                                    model.nodes[i]['color'] = "lightgreen"
-                                    model.nodes[i]['img'] = "img/domain.png"
-                                    break;
-                                case "project":
-                                    model.nodes[i]['color'] = "pink"
-                                    model.nodes[i]['img'] = "img/home.png"
-                                    break;
-                                case "event":
-                                    model.nodes[i]['color'] = "pink"
-                                    model.nodes[i]['img'] = "img/calendar.png"
-                                    break;
-                                default:
-                                    model.nodes[i]['color'] = "orange"
-                                    break;
-                            }
 
-
-                        }
+            config = {
+                person : {
+                    graph :{
+                        color : "lightblue",
+                        img : "img/account.png"
+                    },
+                    form: [
+                        { type : "text" , name : "name" , "description" : "Name" },
+                        { type : "relation" , name : "$work_at" , "description" : "Works at" , relationType: "company+university" },
+                        { type : "relation" , name : "$study_at" , "description" : "Studies at" , relationType: "university" }
+                    ]
+                },
+                university : {
+                    graph :{
+                        color : "lightgreen",
+                        img : "img/school.png"
+                    },
+                    form: [
+                        { type : "text" , name : "name" , "description" : "Name" }
+                    ]
+                },
+                company : {
+                    graph :{
+                        color : "lightgreen",
+                        img : "img/domain.png"
+                    },
+                    form: [
+                        { type : "text" , name : "name" , "description" : "Name" }
+                    ]
+                },
+                project : {
+                    graph :{
+                        color : "pink",
+                        img : "img/home.png"
+                    },
+                    form: [
+                        { type : "text" , name : "name" , "description" : "Name" },
+                        { type: "relation" , name : "$participant" , "description" : "Teilnehmer" , relationType: "person" }
+                    ]
+                },
+                event : {
+                    graph :{
+                        color : "pink",
+                        img : "img/calendar.png"
+                    },
+                    form: [
+                        { type : "text" , name : "name" , "description" : "Name" },
+                        { type : "date" , name : "date" , "description" : "Datum" },
+                        { type: "relation" , name : "$participant" , "description" : "Teilnehmer" , relationType: "person"  },
+                        { type: "relation" , name : "$location" , "description" : "Ort" , relationType: "university+company"  }
+                    ]
+                },
+                default : {
+                    graph :{
+                        color : "orange",
+                        img : undefined
                     }
-            });
+                }
+
+            }
+
+
+
+            // Get Model and configure
+            model = read_json("/api/model")
+            
+            //enrich model 
+            l = model.nodes.length
+            for(var i = 0;i < l;i++)
+            {
+                var t = model.nodes[i].type
+                var graph = config.default.graph
+                if (Object.hasOwn(config, t)) {
+                    graph = config[model.nodes[i].type].graph
+                }
+                model.nodes[i]['color'] = graph.color
+                model.nodes[i]['img'] = graph.img
+            }
+                    
+          
             
             var diagram = new go.Diagram("myDiagramDiv");
+            diagram.layout = new go.LayeredDigraphLayout();
 
+            //diagram.layout = new go.ForceDirectedLayout();
+            //diagram.layout.defaultElectricalCharge = 1;
 
             // the node template describes how each Node should be constructed
             diagram.nodeTemplate =
@@ -81,8 +212,154 @@
 
             // the Model holds only the essential information describing the diagram
             diagram.model = new go.GraphLinksModel(model.nodes,model.edges)
+
+
+            // Tribute in autocomplete mode
+            var tributeManager = new TributeManager();
             
 
+            // Create menu Items
+            var sourceMenuItem = document.getElementById("create-object-menu-item-template").innerHTML;
+            var templateMenuItem = Handlebars.compile(sourceMenuItem);
+            for (const type in config) {
+                if (type == "default") continue; 
+                htmlMenuItem = templateMenuItem({ 'type' : type , 'text' : "Create {0}".format(type)})
+                $("#create-object-menu").append(htmlMenuItem)
+            }
+            
+            //handler for menu Items
+            $(".create-object").click(function(ev) {
+                ev.preventDefault()
+                type = $(this).data("object")
+
+                //Title or modal Formular
+                $("#exampleModal").find(".modal-title").text("Create {0}".format(type))
+
+
+                //Create Formular
+                var form = config[type].form;
+                var html = '<form>'
+                html += '<input type="hidden" name="type" value="{0}">'.format(type)
+
+                for(var i = 0;i < form.length;i++)
+                {
+                    var elm = form[i]
+                    var source = document.getElementById(elm.type +"-input-template").innerHTML;
+                    var template = Handlebars.compile(source);
+                    var id = "input"+i;
+
+                    var context = { id: id, name : elm.name, description : elm.description };
+                    html += template(context);
+                }
+                html += '</form>'
+
+                $("#exampleModal").find(".modal-body").html(html)
+                $("#exampleModal").modal('show');
+
+
+                var add_autocomplete = function(id,relationType) {
+                    
+
+                    var tribute = tributeManager.getTribute(relationType)
+                    
+                    //add to form
+                    tribute.attach( document.getElementById(id));
+
+                    $.ajax({
+                            dataType: "json",
+                            url: "/api/nodes/"+relationType,
+                            success: function(data) {
+                                tribute.append(0,data,true)
+                            }
+                    });
+                }
+
+                for(var i = 0;i < form.length;i++)
+                {
+                    var elm = form[i]
+                    if (elm.type == "relation") {
+                        var id = "input"+i;
+                        add_autocomplete(id,elm.relationType)
+                    }
+                }
+         
+            })
+           
+
+            function getFormData($form){
+                var unindexed_array = $form.serializeArray();
+                var indexed_array = {};
+
+                $.map(unindexed_array, function(n, i){
+                    var a = n['value'].split(',');
+                    if (a.length == 1)
+                        indexed_array[n['name']] = a[0];
+                    else
+                        indexed_array[n['name']] = a;
+                });
+
+                return indexed_array;
+            }
+
+            //Fill Inputs by reading data-source fields (tribute autocomplete)
+            function transferFormData($form){
+                $form.find("[data-source]").each(function( index ) {
+                    var that = this
+                    var value = []
+                    var sourceId = $(that).data("source")
+                    $("#"+sourceId).find("[data-value]").each(function( index ) {
+                        var refId = $(this).data("value")
+                        value.push(refId)
+                    });
+                    $(that).val(value.join(","))
+                })
+            }
+
+            $("#save").click(function(ev) {
+                ev.preventDefault()
+                var form = $("#exampleModal").find("form")
+
+                transferFormData(form);
+
+                var formData = getFormData(form);
+
+                if (!formData['name']) {
+                    alert("Name must not be empty")
+                    return
+                }
+
+                id = create_id(formData['type'],formData['name'])
+
+                //clean up
+                delete formData.type
+                for(k in formData) {
+                    if (!formData[k]) {
+                        delete formData[k]
+                    }
+                }
+
+                obj = {}
+                obj[id] = formData
+                console.log(obj);
+
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    url: "/api/create",
+                    data: JSON.stringify(obj),
+                    success: function(data) {
+                        console.log(data);
+                        $("#exampleModal").modal('hide');
+                    }
+                });
+
+            })
+            
+
+ 
+  
 
         });
           

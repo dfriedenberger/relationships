@@ -7,10 +7,14 @@
 pip install -r requirements.txt
 ```
 
+```
+docker build -t frittenburger/relationships:0.0.1 .
+```
+
 ## Usage
 
 ```bash
-python server.py
+uvicorn server:app --port 9999 --reload
 ```
 
 ### Create rdf file for analyse

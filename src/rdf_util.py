@@ -50,3 +50,9 @@ def create_rdf_from_yaml(graph,filename):
 
         except yaml.YAMLError as exc:
             print(exc)
+
+def append_yaml(data,filename):
+    with open(filename, 'a') as f:
+        f.write("\n")
+        yaml.dump(data, f)
+        f.write("\n")
